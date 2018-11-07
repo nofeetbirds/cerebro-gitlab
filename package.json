@@ -2,8 +2,10 @@
   "name": "cerebro-gitlab",
   "version": "0.1.0",
   "dependencies": {
+    "axios": "^0.18.0",
     "cerebro-tools": "^0.1.8",
-    "cerebro-ui": "^0.0.16"
+    "cerebro-ui": "^0.0.16",
+    "lodash": "^4.17.11"
   },
   "devDependencies": {
     "cerebro-scripts": "0.0.25"
