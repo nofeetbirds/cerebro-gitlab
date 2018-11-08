@@ -29,7 +29,7 @@ function QueryGroups(index,history,callback){
   .then((response)=>{
     var data = response.data;
     var web_urls = _.map(data,(key)=>{
-      return [_.lowerCase(key.web_url),key.web_url];
+      return [_.toLower(key.web_url),key.web_url];
     });
     history = _.concat(history,web_urls);
     cached_weburl = history;
@@ -48,6 +48,7 @@ function QueryGroups(index,history,callback){
 }
 
 QueryGroups(0,[],(result)=>{
+  return result;
 });
 
 function FilterTerm(list,filters,display,actions){
