@@ -27,15 +27,12 @@ function QueryGroups(index,history,callback){
     }
   })
   .then((response)=>{
-    console.log(response);
     var data = response.data;
     var web_urls = _.map(data,(key)=>{
       return [_.lowerCase(key.web_url),key.web_url];
     });
     history = _.concat(history,web_urls);
     cached_weburl = history;
-    console.log('dump web urls is:'+web_urls);
-    console.log('history length is:'+history.length);
     if(web_urls.length >= 90){
       setTimeout(()=>{
         QueryGroups(index+1,history,callback);
