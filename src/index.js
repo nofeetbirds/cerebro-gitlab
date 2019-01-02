@@ -67,7 +67,7 @@ function FilterTerm(list,filters,display,actions){
 }
 
 export const fn = ({ term, display,actions }) => {
-  if (term.match('^gitlab') || term.match('^gi')) {
+  if (term.match('^gitlab ') || term.match('^gi ')) {
     var splited_term = term.split(' ');
     if(splited_term.length > 1){
       FilterTerm(cached_weburl,_.slice(splited_term,1),display,actions);
