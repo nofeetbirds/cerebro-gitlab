@@ -2,9 +2,9 @@
 var _ = require('lodash');
 var axios = require('axios');
 var config = require('./config.js');
+const icon = require("./assets/icon.png");
 
 var cached_weburl = [];
-// var history_time = nil;
 
 var instance = axios.create({
   baseURL: config.url,
@@ -47,9 +47,7 @@ function QueryGroups(index,history,callback){
   });
 }
 
-QueryGroups(0,[],(result)=>{
-  return result;
-});
+
 
 function FilterTerm(list,filters,display,actions){
   if(filters.length > 0){
@@ -59,6 +57,7 @@ function FilterTerm(list,filters,display,actions){
   else{
     _.map(list,(value)=>{
       display({
+        icon,
         title:`${value[1]}`,
         onSelect:()=>{ return actions.open(value[1]);}
       });
@@ -66,7 +65,15 @@ function FilterTerm(list,filters,display,actions){
   }
 }
 
-export const fn = ({ term, display,actions }) => {
+const initialize = () => {
+  QueryGroups(0,[],(result)=>{
+    // console.log('Fetch cached_weburl is:',result);
+    cached_weburl = result;
+    return result;
+  });
+}
+
+const fn = ({ term, display,actions }) => {
   if (term.match('^gitlab ') || term.match('^gi ')) {
     var splited_term = term.split(' ');
     if(splited_term.length > 1){
@@ -74,3 +81,8 @@ export const fn = ({ term, display,actions }) => {
     }
   }
 };
+
+module.exports = {
+  initialize: initialize,
+  fn: fn
+}
