@@ -9,7 +9,6 @@ var cached_weburl = [];
 var instance = axios.create({
   baseURL: config.url,
   timeout: 15000,
-  // withCredentials: true,
   responseType: 'json',
   headers: {
     Accept: 'application/json',
@@ -18,33 +17,36 @@ var instance = axios.create({
   }
 });
 
+const per_page = 100;
+var fetch_project_state = "STOP";
 
-function QueryGroups(index,history,callback){
-  instance.get('/projects', {
-    params: {
-      page: index + 1,
-      per_page: 90,
-    }
-  })
-  .then((response)=>{
-    var data = response.data;
-    var web_urls = _.map(data,(key)=>{
-      return [_.toLower(key.web_url),key.web_url];
+function QueryProjects(index,history,callback){
+    fetch_project_state = "Fetching";
+    instance.get('/projects', {
+        params: {
+            page: index + 1,
+            per_page: per_page,
+        }
+    }).then((response)=>{
+        var data = response.data;
+        var web_urls = _.map(data,(key)=>{
+            return [_.toLower(key.web_url),key.web_url];
+        });
+        history = _.concat(history,web_urls);
+        cached_weburl = history;
+        if(web_urls.length >= per_page){
+            setTimeout(()=>{
+                QueryProjects(index+1,history,callback);
+            }, 1000);
+        }
+        else{
+            fetch_project_state = "Finish";
+            callback(history);
+        }
+    }).catch(function (error) {
+        
+        fetch_project_state = "Fail";
     });
-    history = _.concat(history,web_urls);
-    cached_weburl = history;
-    if(web_urls.length >= 90){
-      setTimeout(()=>{
-        QueryGroups(index+1,history,callback);
-      }, 1000);
-    }
-    else{
-      callback(history);
-    }
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
 }
 
 
@@ -66,20 +68,25 @@ function FilterTerm(list,filters,display,actions){
 }
 
 const initialize = () => {
-  QueryGroups(0,[],(result)=>{
-    // console.log('Fetch cached_weburl is:',result);
-    cached_weburl = result;
-    return result;
-  });
+    
+    QueryProjects(0,[],(result)=>{
+        cached_weburl = result;
+        return result;
+    });
 }
 
 const fn = ({ term, display,actions }) => {
-  if (term.match('^gitlab ') || term.match('^gi ')) {
-    var splited_term = term.split(' ');
-    if(splited_term.length > 1){
-      FilterTerm(cached_weburl,_.slice(splited_term,1),display,actions);
+    if (term.match('^gitlab ') || term.match('^gi ')) {
+        var splited_term = term.split(' ');
+        if(splited_term.length > 1){
+            if(fetch_project_state === "Fail" || (cached_weburl.length === 0 && fetch_project_state === "STOP")){
+                
+                initialize();
+            }
+            
+            FilterTerm(cached_weburl,_.slice(splited_term,1),display,actions);
+        }
     }
-  }
 };
 
 module.exports = {
