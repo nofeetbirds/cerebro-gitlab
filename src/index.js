@@ -52,23 +52,22 @@ function QueryProjects(index,history,callback){
 
 
 function FilterTerm(list,filters,display,actions){
-  if(filters.length > 0){
-    var filter = filters[0];
-    FilterTerm(_.filter(list,(o)=>{return _.includes(o[0],filter);}),_.slice(filters,1),display,actions);
-  }
-  else{
-    _.map(list,(value)=>{
-      display({
-        icon,
-        title:`${value[1]}`,
-        onSelect:()=>{ return actions.open(value[1]);}
-      });
-    });
-  }
+    if(filters.length > 0){
+        var filter = filters[0];
+        FilterTerm(_.filter(list,(o)=>{return _.includes(o[0],filter);}),_.slice(filters,1),display,actions);
+    }
+    else{
+        _.map(list,(value)=>{
+            display({
+                icon,
+                title:`${value[1]}`,
+                onSelect:()=>{ return actions.open(value[1]);}
+            });
+        });
+    }
 }
 
 const initialize = () => {
-    
     QueryProjects(0,[],(result)=>{
         cached_weburl = result;
         return result;
@@ -79,11 +78,20 @@ const fn = ({ term, display,actions }) => {
     if (term.match('^gitlab ') || term.match('^gi ')) {
         var splited_term = term.split(' ');
         if(splited_term.length > 1){
+            console.log("trigger gitlab fetch project state is: ",fetch_project_state," caced_weburl_lenght:",cached_weburl.length);
             if(fetch_project_state === "Fail" || (cached_weburl.length === 0 && fetch_project_state === "STOP")){
-                
+                display({
+                    icon,
+                    title:`拉取数据中...`,
+                });
                 initialize();
             }
-            
+            if (fetch_project_state === "Fetching") {
+                display({
+                    icon,
+                    title:`拉取数据中...`,
+                });
+            }
             FilterTerm(cached_weburl,_.slice(splited_term,1),display,actions);
         }
     }
