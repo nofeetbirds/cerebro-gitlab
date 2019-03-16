@@ -1,7 +1,6 @@
 'use strict';
 var _ = require('lodash');
 var axios = require('axios');
-var config = require('./config.js');
 const icon = require("./assets/icon.png");
 const log = require("loglevel");
 log.setLevel("silent");
@@ -9,16 +8,8 @@ log.setLevel("silent");
 
 var cached_weburl = [];
 
-var instance = axios.create({
-  baseURL: config.url,
-  timeout: 15000,
-  responseType: 'json',
-  headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-    'PRIVATE-TOKEN': config.token
-  }
-});
+var instance = null;
+
 
 const per_page = 100;
 var fetch_project_state = "STOP";
@@ -99,36 +90,53 @@ const initialize = () => {
 
 
 const fn = (scope) => {
-    var { term, display,actions,hide } = scope;
+  var { term, display,actions,hide,settings } = scope;
     global_scope = scope;
     if (term.match('^gitlab ') || term.match('^gi ')) {
         var splited_term = term.split(' ');
-        if(splited_term.length > 1){
-            log.debug("trigger gitlab fetch project state is: ",fetch_project_state," caced_weburl_lenght:",cached_weburl.length);
-            querying_term = splited_term;
-            lastshow_timestamp = new Date();
-            last_display_ids[last_display_ids.length] = lastshow_timestamp;
-            if(fetch_project_state === "Fail" || (cached_weburl.length === 0 && fetch_project_state === "STOP")){
-                display({
-                    id:lastshow_timestamp,
-                    icon,
-                    title:`拉取数据中...`,
-                });
-                initialize();
-            }
-            else if (fetch_project_state === "Fetching") {
-                display({
-                    id:lastshow_timestamp,
-                    icon,
-                    title:`拉取数据中...`,
-                });
-            }
-            FilterTerm(cached_weburl,_.slice(splited_term,1),display,actions,lastshow_timestamp);
+      if(splited_term.length > 1){
+        instance = axios.create({
+          baseURL: settings.gitlabapi,
+          timeout: 15000,
+          responseType: 'json',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'PRIVATE-TOKEN': settings.gitlabapitoken
+          }
+        });
+
+        log.debug("trigger gitlab fetch project state is: ",fetch_project_state," caced_weburl_lenght:",cached_weburl.length);
+        querying_term = splited_term;
+        lastshow_timestamp = new Date();
+        last_display_ids[last_display_ids.length] = lastshow_timestamp;
+        if(fetch_project_state === "Fail" || (cached_weburl.length === 0 && fetch_project_state === "STOP")){
+          display({
+            id:lastshow_timestamp,
+            icon,
+            title:`拉取数据中...`,
+          });
+          initialize();
         }
+        else if (fetch_project_state === "Fetching") {
+          display({
+            id:lastshow_timestamp,
+            icon,
+            title:`拉取数据中...`,
+          });
+        }
+        FilterTerm(cached_weburl,_.slice(splited_term,1),display,actions,lastshow_timestamp);
+      }
     }
 };
 
 module.exports = {
-  initialize: initialize,
-  fn: fn
+  // initialize: initialize,
+  fn: fn,
+  settings: {
+    gitlabapi: { type: 'string',defaultValue:"http://www.lejuhub.com/api/v4/" },
+    gitlabapitoken: { type: 'string' },
+  }
 }
+
+
