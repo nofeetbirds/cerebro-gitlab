@@ -6,7 +6,8 @@
     "cerebro-tools": "^0.1.8",
     "cerebro-ui": "^0.0.16",
     "lodash": "^4.17.11",
-    "loglevel": "^1.6.1"
+    "loglevel": "^1.6.1",
+    "mime": "^2.4.0"
   },
   "devDependencies": {
     "cerebro-scripts": "0.0.25"
